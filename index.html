@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jupiter Terminal — Institutional Liquid Execution Suite</title>
+  <meta name="description" content="Next-Generation Jupiter Trading & Liquidity Terminal. Unified Swap, Limit, DCA, and Perps with real-time multi-hop route visualizer, TradingView-grade interactive chart, and Jito MEV shield.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="cinematic-load">
+
+  <!-- Ambient Volumetric Dynamic Lights -->
+  <div class="ambient-light light-1"></div>
+  <div class="ambient-light light-2"></div>
+  <div class="ambient-light light-3"></div>
+
+  <!-- Top Navigation Bar (Liquid Glass Header) -->
+  <header class="topbar reveal-item" style="--delay: 0.05s;">
+    <div class="topbar-left">
+      <div class="brand" id="brand">
+        <div class="brand-glyph-box">
+          <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3.2"></circle>
+            <ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(35 12 12)"></ellipse>
+            <ellipse cx="12" cy="12" rx="9.5" ry="4" transform="rotate(-35 12 12)"></ellipse>
+          </svg>
+        </div>
+        <div class="brand-name-group">
+          <span class="brand-name">Jupiter <span class="brand-accent">Terminal</span></span>
+          <span class="brand-sub">LIQUID EXECUTION ENGINE</span>
+        </div>
+        <span class="brand-badge">PRO v2.5</span>
+      </div>
+
+      <!-- Execution Mode Switcher with Morphing Pill -->
+      <nav class="mode-tabs" id="modeTabs">
+        <div class="mode-tab-indicator" id="modeTabIndicator"></div>
+        <button class="mode-tab active" data-mode="swap">Swap</button>
+        <button class="mode-tab" data-mode="limit">Limit Order</button>
+        <button class="mode-tab" data-mode="dca">DCA Ladder</button>
+        <button class="mode-tab" data-mode="perps">Perps (20x)</button>
+      </nav>
+    </div>
+
+    <div class="topbar-right">
+      <!-- Solana TPS Live Pulse -->
+      <div class="telemetry-pill">
+        <span class="telemetry-dot"></span>
+        <span class="telemetry-label">TPS</span>
+        <span class="telemetry-value mono" id="tpsValue">3,412</span>
+      </div>
+
+      <!-- Slot Timing -->
+      <div class="telemetry-pill">
+        <span class="slot-ring" id="slotRing"></span>
+        <span class="telemetry-label">SLOT</span>
+        <span class="telemetry-value mono" id="slotValue">400ms</span>
+      </div>
+
+      <!-- Sound Toggle -->
+      <button class="sound-pill-btn" id="soundToggleBtn" title="Toggle Tactile Audio">
+        <svg class="sound-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+        <span id="soundLabel">Sound ON</span>
+      </button>
+
+      <!-- Connected Wallet Pill -->
+      <button class="wallet-pill" id="walletPill" title="Click to copy address">
+        <span class="wallet-dot"></span>
+        <span class="wallet-address mono" id="walletAddress">7xKX···9pQr</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="13" height="13">
+          <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Terminal Stage -->
+  <main class="terminal-grid">
+    
+    <!-- LEFT PANEL: Institutional Chart & Multi-Hop Route Visualizer -->
+    <div class="terminal-left-column">
+      
+      <!-- Market Hero Header -->
+      <div class="market-hero-card glass-card reveal-item" style="--delay: 0.12s;">
+        <div class="market-hero-left">
+          <div class="pair-selector">
+            <button class="token-chip" id="fromTokenChip">
+              <span class="token-icon sol-icon"></span>
+              <span id="fromTokenLabel">SOL</span>
+            </button>
+            <button class="swap-direction-btn" id="flipTokensBtn" title="Flip Direction (X)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 10l5-5 5 5"></path>
+                <path d="M12 5v14"></path>
+                <path d="M17 14l-5 5-5-5"></path>
+              </svg>
+            </button>
+            <button class="token-chip" id="toTokenChip">
+              <span class="token-icon bonk-icon"></span>
+              <span id="toTokenLabel">BONK</span>
+            </button>
+          </div>
+
+          <div class="price-readout">
+            <span class="price-value mono" id="priceValue">$0.00001842</span>
+            <span class="price-delta positive mono" id="priceDelta">+4.82%</span>
+          </div>
+        </div>
+
+        <!-- 24h Telemetry Stats -->
+        <div class="market-stat-tally">
+          <div class="stat-cell">
+            <span class="cell-label">24H VOLUME</span>
+            <strong class="cell-val mono">$48.2M</strong>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-cell">
+            <span class="cell-label">POOL LIQUIDITY</span>
+            <strong class="cell-val mono">$18.4M</strong>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-cell">
+            <span class="cell-label">24H HIGH</span>
+            <strong class="cell-val mono">$0.00001892</strong>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-cell">
+            <span class="cell-label">24H LOW</span>
+            <strong class="cell-val mono">$0.00001640</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Professional Candlestick Chart Area -->
+      <div class="chart-card glass-card reveal-item" style="--delay: 0.18s;">
+        <div class="chart-header-row">
+          <div class="tf-selector">
+            <span class="tf-label">TIMEFRAME</span>
+            <button class="tf-btn" data-tf="1s">1s</button>
+            <button class="tf-btn active" data-tf="15s">15s</button>
+            <button class="tf-btn" data-tf="1m">1m</button>
+            <button class="tf-btn" data-tf="5m">5m</button>
+            <button class="tf-btn" data-tf="15m">15m</button>
+          </div>
+
+          <div class="chart-indicators">
+            <span class="indicator-tag">EMA 20 <span class="tag-color emerald"></span></span>
+            <span class="indicator-tag">EMA 50 <span class="tag-color purple"></span></span>
+            <span class="indicator-tag">Volume Profile</span>
+          </div>
+        </div>
+
+        <!-- Interactive Canvas Chart -->
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="candlestickCanvas" width="820" height="280"></canvas>
+          <div class="chart-overlay-info" id="chartOverlayInfo">
+            <span class="overlay-price mono" id="overlayPrice">O: 18.24 H: 18.52 L: 18.18 C: 18.42</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Multi-Hop Liquidity Route Visualizer -->
+      <div class="route-visualizer-card glass-card reveal-item" style="--delay: 0.24s;">
+        <div class="route-header-row">
+          <div class="route-title-group">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+            <span class="route-title">OPTIMIZED LIQUIDITY ROUTING</span>
+            <span class="route-split-badge">SPLIT 3 POOLS • BEST SPREAD</span>
+          </div>
+          <span class="route-hops-info mono">2 Hops • 0.04% Price Impact</span>
+        </div>
+
+        <!-- Interactive Vector Route Graph -->
+        <div class="route-graph-container">
+          <!-- Source Node -->
+          <div class="route-node source-node">
+            <div class="node-icon-frame sol-frame">
+              <span class="token-icon sol-icon"></span>
+            </div>
+            <span class="node-title">SOL</span>
+            <span class="node-sub">Source (100%)</span>
+          </div>
+
+          <!-- Split Channels with Flow Particles -->
+          <div class="route-channels-branch">
+            
+            <!-- Channel 1: Orca CLMM -->
+            <div class="channel-row">
+              <div class="channel-line">
+                <span class="flow-particle particle-fast" style="animation-delay: 0s"></span>
+                <span class="flow-particle particle-fast" style="animation-delay: 0.8s"></span>
+              </div>
+              <div class="pool-node orca-node">
+                <span class="pool-badge orca-badge">Orca Whirlpools</span>
+                <span class="pool-split-val mono">48% ($6.0 SOL)</span>
+              </div>
+              <div class="channel-line">
+                <span class="flow-particle" style="animation-delay: 0.4s"></span>
+              </div>
+            </div>
+
+            <!-- Channel 2: Raydium CPMM -->
+            <div class="channel-row">
+              <div class="channel-line">
+                <span class="flow-particle" style="animation-delay: 0.2s"></span>
+                <span class="flow-particle" style="animation-delay: 1.0s"></span>
+              </div>
+              <div class="pool-node raydium-node">
+                <span class="pool-badge raydium-badge">Raydium CPMM</span>
+                <span class="pool-split-val mono">34% ($4.25 SOL)</span>
+              </div>
+              <div class="channel-line">
+                <span class="flow-particle" style="animation-delay: 0.6s"></span>
+              </div>
+            </div>
+
+            <!-- Channel 3: Meteora DLMM -->
+            <div class="channel-row">
+              <div class="channel-line">
+                <span class="flow-particle" style="animation-delay: 0.5s"></span>
+              </div>
+              <div class="pool-node meteora-node">
+                <span class="pool-badge meteora-badge">Meteora DLMM</span>
+                <span class="pool-split-val mono">18% ($2.25 SOL)</span>
+              </div>
+              <div class="channel-line">
+                <span class="flow-particle" style="animation-delay: 0.9s"></span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Destination Node -->
+          <div class="route-node dest-node">
+            <div class="node-icon-frame bonk-frame">
+              <span class="token-icon bonk-icon"></span>
+            </div>
+            <span class="node-title">BONK</span>
+            <span class="node-sub">Output (Min guaranteed)</span>
+          </div>
+        </div>
+
+        <!-- Route Meta Data Triplets -->
+        <div class="route-meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">EFFECTIVE PRICE</span>
+            <strong class="meta-value mono">1 SOL = 54,274.57 BONK</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">MAX SLIPPAGE</span>
+            <strong class="meta-value good mono" id="metaSlippage">0.5% (Protected)</strong>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">EST. GAS & PRIORITY FEE</span>
+            <strong class="meta-value mono" id="metaNetworkFee">0.00021 SOL ($0.03)</strong>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL: Precision Execution Dock -->
+    <aside class="execution-dock glass-card reveal-item" style="--delay: 0.22s;" id="executionDock">
+      
+      <!-- Dock Mode Indicator Header -->
+      <div class="dock-header">
+        <span class="dock-mode-tag" id="dockModeTag">MARKET SWAP</span>
+        <span class="dock-gas-badge">⚡ 1-BLOCK JITO LAND</span>
+      </div>
+
+      <!-- You Pay Input Section -->
+      <div class="dock-section">
+        <div class="section-top-label">
+          <label class="dock-label">You pay</label>
+          <div class="balance-row">
+            <span>Balance: <strong class="mono">48.21 SOL</strong></span>
+            <button class="max-btn" id="maxBtn">MAX</button>
+          </div>
+        </div>
+        <div class="amount-input-row">
+          <input type="text" inputmode="decimal" id="payAmount" value="12.5" class="amount-input mono" placeholder="0.0">
+          <div class="input-token-badge" id="payBadge">SOL</div>
+        </div>
+        <!-- Quick Size Presets -->
+        <div class="size-presets">
+          <button class="size-btn" data-pct="0.25">25%</button>
+          <button class="size-btn" data-pct="0.50">50%</button>
+          <button class="size-btn" data-pct="0.75">75%</button>
+          <button class="size-btn active" data-pct="1.00">100%</button>
+        </div>
+      </div>
+
+      <!-- Flip Button Divider -->
+      <div class="flip-divider">
+        <button class="mini-flip-btn" id="miniFlip" title="Switch tokens">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 1l4 4-4 4"></path>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <path d="M7 23l-4-4 4-4"></path>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- You Receive Input Section -->
+      <div class="dock-section">
+        <div class="section-top-label">
+          <label class="dock-label">You receive</label>
+          <span id="receiveUsd" class="mono receive-usd-tag">≈ $12.48</span>
+        </div>
+        <div class="amount-input-row">
+          <input type="text" id="receiveAmount" value="678,432.19" class="amount-input mono" readonly>
+          <div class="input-token-badge" id="receiveBadge">BONK</div>
+        </div>
+      </div>
+
+      <!-- Limit Order / DCA Extra Controls (Dynamic State) -->
+      <div class="order-mode-extension" id="modeExtension">
+        <!-- Injected dynamically if Limit/DCA/Perps chosen -->
+      </div>
+
+      <!-- Slippage Tolerance Controls -->
+      <div class="control-row">
+        <div class="control-label-row">
+          <span>Slippage Tolerance</span>
+          <span class="control-value mono" id="slippageValue">0.5%</span>
+        </div>
+        <div class="slippage-presets">
+          <button class="preset-btn" data-slip="0.1">0.1%</button>
+          <button class="preset-btn active" data-slip="0.5">0.5%</button>
+          <button class="preset-btn" data-slip="1.0">1.0%</button>
+          <button class="preset-btn" data-slip="auto">Auto</button>
+        </div>
+      </div>
+
+      <!-- MEV Protection & Jito Tip Engine -->
+      <div class="control-row mev-row">
+        <div class="mev-toggle-header">
+          <div class="mev-shield-icon" id="mevShieldIcon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l8 3.5v5.3c0 5-3.4 8.7-8 10.2-4.6-1.5-8-5.2-8-10.2V5.5L12 2z"></path>
+              <path d="M8.5 12l2.5 2.5 4.5-5"></path>
+            </svg>
+          </div>
+          <div class="mev-copy">
+            <span class="mev-title">Jito MEV Shield</span>
+            <span class="mev-subtitle" id="mevSubtitle">Front-run protection active</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="mevToggle" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+        
+        <div class="jito-tip-row" id="jitoTipRow">
+          <span class="tip-label">Priority Tip</span>
+          <input type="range" min="0" max="100" value="35" class="tip-slider" id="tipSlider">
+          <span class="tip-value mono" id="tipValue">0.00035 SOL</span>
+        </div>
+      </div>
+
+      <!-- Hold to Execute Button (Tactile 60fps Liquid Fill) -->
+      <button class="execute-btn" id="executeBtn">
+        <span class="execute-btn-fill" id="executeFill"></span>
+        <span class="execute-btn-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"></path>
+          </svg>
+          <span id="btnLabelText">Hold to Execute</span>
+        </span>
+      </button>
+      
+      <div class="hotkey-hint">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to execute instantly</div>
+    </aside>
+
+    <!-- FULL WIDTH: Live Real-Time Activity Feed -->
+    <section class="activity-panel glass-card reveal-item" style="--delay: 0.3s;">
+      <div class="activity-header">
+        <div class="activity-title-group">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <h3>Recent Network Executions</h3>
+          <span class="live-stream-badge">LIVE STREAM</span>
+        </div>
+        
+        <div class="activity-filter-tabs" id="filterTabs">
+          <button class="filter-tab active" data-filter="all">All</button>
+          <button class="filter-tab" data-filter="swap">Swaps</button>
+          <button class="filter-tab" data-filter="limit">Limit Orders</button>
+          <button class="filter-tab" data-filter="dca">DCA Ladders</button>
+        </div>
+      </div>
+      
+      <div class="activity-list" id="activityList">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Execution Settings Floating Trigger -->
+  <button class="settings-fab" id="settingsFab" title="Execution Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+  </button>
+
+  <!-- Settings Modal Dialog -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Execution Settings</h3>
+        <button class="modal-close" id="modalClose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6L6 18"></path>
+            <path d="M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-group">
+          <label>Priority Fee Tier</label>
+          <div class="segmented-control" id="feeSegment">
+            <button data-fee="low">Low</button>
+            <button class="active" data-fee="market">Market</button>
+            <button data-fee="turbo">Turbo</button>
+          </div>
+        </div>
+        <div class="setting-item-card">
+          <div class="setting-item-text">
+            <span class="setting-item-title">Dynamic Slippage Optimization</span>
+            <span class="setting-item-desc">Auto-adjust tolerance to minimize MEV slippage risk</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="autoSlippageToggle" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+        <div class="setting-item-card">
+          <div class="setting-item-text">
+            <span class="setting-item-title">Simulate Transaction Before Send</span>
+            <span class="setting-item-desc">Pre-flight simulation against live Solana state</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="simulateToggle" checked>
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+        <div class="live-preview-box mono" id="livePreviewBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Overlay — Relocated to Bottom Right with Non-Obtrusive Stacking -->
+  <div class="toast-hub" id="toastHub"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
